@@ -20,6 +20,79 @@ class GatewayService(object):
 
     orders_rpc = RpcProxy('orders')
     products_rpc = RpcProxy('products')
+    
+    # Writing a DELETE request to delete Product and Order
+
+    # *********** DELETE PRODUCT ************************
+    @http(
+        "DELETE", "/products/<string:product_id>",
+        expected_exceptions=ProductNotFound
+    )
+
+    def del_prod(self, request, product_id):
+        """Delete the product by `product_id`
+        """
+        # DELETE COMMAND TO DELETE THE DATA
+        try:
+            # Delete if the product exist
+            # Check if product_id exists before deletion
+            self.products_rpc.delete(product_id)
+            return Response(json.dumps({'id': "Product ID Deleted"}), mimetype='application/json')
+
+        # Exception if the product id do not exist
+        except ValueError as exc:
+            raise BadRequest("Invalid product_id: {}".format(exc))
+            
+
+
+    # *********** DELETE ORDER ***************************
+
+    @http(
+        "DELETE", "/orders/<int:order_id>",
+        expected_exceptions=ProductNotFound
+    )
+
+    def del_order(self, request, order_id):
+        """Delete the order by `order_id`
+        """
+        # DELETE COMMAND TO DELETE THE DATA
+        try:
+            # Delete if the order exist
+            self.orders_rpc.delete_order_from_db(order_id)
+            return Response(json.dumps({'id': "Order ID Deleted"}), mimetype='application/json')
+
+        # Exception if the product id do not exist
+        except:
+            raise BadRequest("Invalid ID to delete")
+
+    # ********* GET ALL PRODUCTS **************************
+    
+    @http(
+        "GET", "/products/getallprod",
+        expected_exceptions=ProductNotFound
+    )
+    def get_all_products(self, request):
+        """Return `product_id` of all the existing products
+        """
+        product = {prod['id']: prod for prod in self.products_rpc.get_allprod()}
+        
+        return Response(json.dumps(product), mimetype='application/json')
+
+    # ********* GET ALL ORDERS **************************
+    
+    @http(
+        "GET", "/orders/getallorders",
+        expected_exceptions=ProductNotFound
+    )
+    def get_all_orders(self, request):
+        """Return `order_id` of all the existing products
+        """
+        orders = self.orders_rpc.get_allorders()
+
+        all_orders = [item for item in orders]        
+        return Response(json.dumps(orders), mimetype='application/json')
+
+    # *****************************************************
 
     @http(
         "GET", "/products/<string:product_id>",
