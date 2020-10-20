@@ -57,6 +57,19 @@ class StorageWrapper:
         return self.client.hincrby(
             self._format_key(product_id), 'in_stock', -amount)
 
+    # *******************************************************************************
+    # Increment the stock whenever the order is deleted
+    def increment_stock(self, product_id, stock_amount):
+        return self.client.hincrby(self._format_key(product_id), 'in_stock', stock_amount)
+
+    # Delete function for products by `product_id`
+    def delete(self, product_id):
+        fields = ['id','title','passenger_capacity','maximum_speed','in_stock']
+        for each_field in fields:
+            # `hdel` to delete key from hash
+            product = self.client.hdel(self._format_key(product_id), each_field)
+
+    # *******************************************************************************
 
 class Storage(DependencyProvider):
 
